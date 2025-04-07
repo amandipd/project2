@@ -1,14 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  TextField, 
-  Button, 
-  Typography, 
-  MenuItem,
-  Paper
-} from '@mui/material';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import './AddTransaction.css';
 
 const categories = [
   'Food & Dining',
@@ -23,7 +14,7 @@ const categories = [
 
 function AddTransaction() {
   const [formData, setFormData] = useState({
-    date: new Date(),
+    date: '',
     name: '',
     amount: '',
     category: ''
@@ -34,13 +25,6 @@ function AddTransaction() {
     setFormData(prevState => ({
       ...prevState,
       [name]: value
-    }));
-  };
-
-  const handleDateChange = (date) => {
-    setFormData(prevState => ({
-      ...prevState,
-      date: date
     }));
   };
 
@@ -58,7 +42,7 @@ function AddTransaction() {
       if (response.ok) {
         // Reset form
         setFormData({
-          date: new Date(),
+          date: '',
           name: '',
           amount: '',
           category: ''
@@ -74,75 +58,72 @@ function AddTransaction() {
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Add New Transaction
-        </Typography>
-        
-        <form onSubmit={handleSubmit}>
-          <LocalizationProvider dateAdapter={AdapterDateFns}>
-            <DatePicker
-              label="Date"
-              value={formData.date}
-              onChange={handleDateChange}
-              renderInput={(params) => <TextField {...params} fullWidth margin="normal" />}
-            />
-          </LocalizationProvider>
+    <div className="add-transaction-container">
+      <h2>Add New Transaction</h2>
+      
+      <form onSubmit={handleSubmit} className="transaction-form">
+        <div className="form-group">
+          <label htmlFor="date">Date:</label>
+          <input
+            type="date"
+            id="date"
+            name="date"
+            value={formData.date}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Transaction Name"
+        <div className="form-group">
+          <label htmlFor="name">Transaction Name:</label>
+          <input
+            type="text"
+            id="name"
             name="name"
             value={formData.name}
             onChange={handleChange}
             required
+            placeholder="Enter transaction name"
           />
+        </div>
 
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Amount"
-            name="amount"
+        <div className="form-group">
+          <label htmlFor="amount">Amount ($):</label>
+          <input
             type="number"
+            id="amount"
+            name="amount"
             value={formData.amount}
             onChange={handleChange}
             required
-            InputProps={{
-              startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>,
-            }}
+            placeholder="Enter amount"
+            step="0.01"
           />
+        </div>
 
-          <TextField
-            fullWidth
-            margin="normal"
-            select
-            label="Category"
+        <div className="form-group">
+          <label htmlFor="category">Category:</label>
+          <select
+            id="category"
             name="category"
             value={formData.category}
             onChange={handleChange}
             required
           >
+            <option value="">Select a category</option>
             {categories.map((category) => (
-              <MenuItem key={category} value={category}>
+              <option key={category} value={category}>
                 {category}
-              </MenuItem>
+              </option>
             ))}
-          </TextField>
+          </select>
+        </div>
 
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary" 
-            fullWidth 
-            sx={{ mt: 3 }}
-          >
-            Add Transaction
-          </Button>
-        </form>
-      </Paper>
-    </Box>
+        <button type="submit" className="submit-button">
+          Add Transaction
+        </button>
+      </form>
+    </div>
   );
 }
 
