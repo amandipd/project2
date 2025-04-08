@@ -84,6 +84,43 @@ app.post('/api/transactions', async (req, res) => {
   }
 });
 
+// Delete transaction
+app.delete('/api/transactions/:id', async (req, res) => {
+  try {
+    console.log('Attempting to delete transaction with ID:', req.params.id);
+    
+    // Validate MongoDB ID format
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      console.log('Invalid MongoDB ID format:', req.params.id);
+      return res.status(400).json({ 
+        message: 'Invalid transaction ID format'
+      });
+    }
+
+    const transaction = await Transaction.findByIdAndDelete(req.params.id);
+    console.log('Delete operation result:', transaction);
+    
+    if (!transaction) {
+      console.log('Transaction not found with ID:', req.params.id);
+      return res.status(404).json({ 
+        message: 'Transaction not found'
+      });
+    }
+    
+    console.log('Transaction deleted successfully:', transaction);
+    res.status(200).json({ 
+      message: 'Transaction deleted successfully',
+      deletedTransaction: transaction
+    });
+  } catch (error) {
+    console.error('Detailed error deleting transaction:', error);
+    res.status(500).json({ 
+      message: 'Error deleting transaction',
+      error: error.message 
+    });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);

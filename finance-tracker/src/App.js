@@ -3,6 +3,7 @@ import React from "react";
 import { Route, Routes, Link } from "react-router-dom";
 import AddTransaction from "./pages/AddTransaction";
 import Transaction from "./pages/Transactions";
+import RemoveTransaction from "./pages/RemoveTransaction";
 // Import Material UI components
 import { 
   AppBar, 
@@ -15,7 +16,8 @@ import {
 // Import Material UI icons
 import { 
   AccountBalance as AccountBalanceIcon,
-  AddCircle as AddCircleIcon 
+  AddCircle as AddCircleIcon,
+  DeleteOutline as DeleteIcon
 } from '@mui/icons-material';
 // Import Roboto font
 import '@fontsource/roboto/300.css';
@@ -56,6 +58,14 @@ function App() {
           >
             Add Transaction
           </Button>
+          <Button 
+            color="inherit" 
+            component={Link} 
+            to="/remove-transaction"
+            startIcon={<DeleteIcon />}
+          >
+            Remove Transaction
+          </Button>
         </Toolbar>
       </AppBar>
 
@@ -64,6 +74,8 @@ function App() {
         <Routes>
           <Route path="/add-transaction" element={<AddTransaction />} />
           <Route path="/transactions" element={<Transaction />} />
+          <Route path="/remove-transaction" element={<RemoveTransaction />} />
+          <Route path="/" element={<Transaction />} />
         </Routes>
       </Container>
     </Box>
