@@ -1,5 +1,5 @@
 import "./App.css";
-import React from "react";
+import React, { useState } from "react";
 import { Route, Routes, Link } from "react-router-dom";
 import AddTransaction from "./pages/AddTransaction";
 import Transaction from "./pages/Transactions";
@@ -11,21 +11,31 @@ import {
   Typography, 
   Button, 
   Container,
-  Box
+  Box,
+  Fab
 } from '@mui/material';
 // Import Material UI icons
 import { 
   AccountBalance as AccountBalanceIcon,
   AddCircle as AddCircleIcon,
-  DeleteOutline as DeleteIcon
+  DeleteOutline as DeleteIcon,
+  Chat as ChatIcon
 } from '@mui/icons-material';
 // Import Roboto font
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
+// Import ChatBot component
+import ChatBot from './components/ChatBot';
 
 function App() {
+  const [showChatBot, setShowChatBot] = useState(false);
+
+  const toggleChatBot = () => {
+    setShowChatBot(!showChatBot);
+  };
+
   return (
     // Main container with a light gray background
     <Box sx={{ 
@@ -78,6 +88,24 @@ function App() {
           <Route path="/" element={<Transaction />} />
         </Routes>
       </Container>
+
+      {/* Chat Bot Fab Button */}
+      <Fab 
+        color="primary" 
+        aria-label="chat" 
+        onClick={toggleChatBot}
+        sx={{ 
+          position: 'fixed', 
+          bottom: 20, 
+          right: 20,
+          zIndex: 999
+        }}
+      >
+        <ChatIcon />
+      </Fab>
+
+      {/* Chat Bot Component */}
+      {showChatBot && <ChatBot onClose={toggleChatBot} />}
     </Box>
   );
 }

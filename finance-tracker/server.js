@@ -1,9 +1,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const OpenAI = require('openai');
 require('dotenv').config();
 
 const app = express();
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 // Import Transaction model
 const Transaction = require('./models/Transaction');
@@ -116,6 +122,75 @@ app.delete('/api/transactions/:id', async (req, res) => {
     console.error('Detailed error deleting transaction:', error);
     res.status(500).json({ 
       message: 'Error deleting transaction',
+      error: error.message 
+    });
+  }
+});
+
+// Chatbot endpoint
+app.post('/api/chat', async (req, res) => {
+  try {
+    console.log('Chat endpoint called with body:', req.body);
+    const { message } = req.body;
+    
+    if (!message) {
+      console.log('Error: Message is required');
+      return res.status(400).json({ message: 'Message is required' });
+    }
+
+    // Fetch transactions to provide context to the AI
+    console.log('Fetching transactions from database...');
+    const transactions = await Transaction.find().sort({ date: -1 });
+    console.log(`Found ${transactions.length} transactions`);
+    
+    // Create a summary of transactions for context
+    let transactionSummary = '';
+    if (transactions.length > 0) {
+      const totalSpent = transactions.reduce((sum, t) => sum + t.amount, 0);
+      const categories = [...new Set(transactions.map(t => t.category))];
+      
+      transactionSummary = `
+        You have ${transactions.length} transactions in your database.
+        Total amount: $${totalSpent.toFixed(2)}
+        Categories: ${categories.join(', ')}
+        
+        Recent transactions:
+        ${transactions.slice(0, 5).map(t => 
+          `- ${t.date.toLocaleDateString()}: $${t.amount.toFixed(2)} for ${t.name} (${t.category})`
+        ).join('\n')}
+      `;
+    } else {
+      transactionSummary = 'You have no transactions in your database yet.';
+    }
+
+    // Create the system message with context
+    const systemMessage = `You are a financial assistant for a finance tracking application. 
+    You help users understand their spending habits and provide financial advice.
+    
+    ${transactionSummary}
+    
+    Provide helpful, concise responses about the user's financial data and general financial advice.`;
+
+    console.log('Calling OpenAI API...');
+    // Call OpenAI API
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [
+        { role: "system", content: systemMessage },
+        { role: "user", content: message }
+      ],
+      max_tokens: 500
+    });
+
+    console.log('OpenAI API response received');
+    // Return the AI response
+    res.json({ 
+      response: completion.choices[0].message.content 
+    });
+  } catch (error) {
+    console.error('Detailed error with chatbot:', error);
+    res.status(500).json({ 
+      message: 'Error processing your request',
       error: error.message 
     });
   }
