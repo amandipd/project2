@@ -1,14 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const OpenAI = require('openai');
+const axios = require('axios');
 require('dotenv').config();
 
 const app = express();
 
-// Initialize OpenAI
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+// OpenAI API configuration
+const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
+const axiosInstance = axios.create({
+  headers: {
+    'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+    'Content-Type': 'application/json'
+  }
 });
 
 // Import Transaction model
@@ -172,8 +176,8 @@ app.post('/api/chat', async (req, res) => {
     Provide helpful, concise responses about the user's financial data and general financial advice.`;
 
     console.log('Calling OpenAI API...');
-    // Call OpenAI API
-    const completion = await openai.chat.completions.create({
+    // Call OpenAI API using Axios
+    const response = await axiosInstance.post(OPENAI_API_URL, {
       model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: systemMessage },
@@ -185,7 +189,7 @@ app.post('/api/chat', async (req, res) => {
     console.log('OpenAI API response received');
     // Return the AI response
     res.json({ 
-      response: completion.choices[0].message.content 
+      response: response.data.choices[0].message.content 
     });
   } catch (error) {
     console.error('Detailed error with chatbot:', error);
